@@ -177,3 +177,8 @@ cargo run -- rollback test-app
 * No orchestration or clustering
 * No automatic scaling
 
+## demo
+
+<img width="953" height="900" alt="image" src="https://github.com/user-attachments/assets/36f5bf24-7354-4872-8717-9ef60b15dafa" /> 
+
+<img width="600" height="172" alt="image" src="https://github.com/user-attachments/assets/e62027e8-0381-4b1f-9b85-079879529aea" />
