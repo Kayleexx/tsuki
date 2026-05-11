@@ -45,3 +45,35 @@ pub fn save_app(
 
     Ok(())
 }
+
+pub fn get_app_port(
+    name: &str,
+) -> Result<Option<u16>> {
+    let conn = connect()?;
+
+    let mut stmt = conn.prepare(
+        "SELECT port FROM apps WHERE name = ?1"
+    )?;
+
+    let mut rows = stmt.query([name])?;
+
+    if let Some(row) = rows.next()? {
+        return Ok(Some(row.get(0)?));
+    }
+
+    Ok(None)
+}
+
+pub fn get_or_allocate_port(
+    name: &str,
+) -> Result<u16> {
+    if let Some(port) = get_app_port(name)? {
+        return Ok(port);
+    }
+
+    let port = allocate_port()?;
+
+    save_app(name, port)?;
+
+    Ok(port)
+}

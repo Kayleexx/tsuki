@@ -10,6 +10,7 @@ use crate::docker::build_image;
 use crate::ports::{
     allocate_port,
     save_app,
+    get_or_allocate_port,
 };
 use crate::ssh::{
     run_remote_command,
@@ -73,7 +74,7 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("remote image loaded successfully");
 
-    let port = allocate_port()?;
+    let port = get_or_allocate_port(&app_name)?;
 
     save_app(&app_name, port)?;
 
