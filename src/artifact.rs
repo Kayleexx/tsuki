@@ -1,9 +1,14 @@
 use anyhow::{bail, Result};
 use std::fs;
 use tokio::process::Command;
+use crate::state::state_dir;
 
 pub async fn export_image(tag: &str, output: &str) -> Result<()> {
-    fs::create_dir_all(".tsuki/artifacts")?;
+    
+    let artifact_dir = state_dir()?
+        .join("artifacts");
+    
+    fs::create_dir_all(&artifact_dir)?;
 
     let command = format!(
         "docker save {} | gzip > {}",

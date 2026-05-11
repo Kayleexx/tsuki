@@ -1,10 +1,15 @@
 use anyhow::Result;
 use rusqlite::Connection;
+use crate::state::state_dir;
 
 pub fn connect() -> Result<Connection> {
     std::fs::create_dir_all(".tsuki")?;
 
-    let conn = Connection::open(".tsuki/tsuki.db")?;
+    
+    let db_path = state_dir()?
+        .join("tsuki.db");
+    
+    let conn = Connection::open(db_path)?;
 
     conn.execute(
         "

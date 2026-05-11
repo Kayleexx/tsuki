@@ -10,6 +10,8 @@ use crate::docker::build_image;
 use crate::deployments::record_deployment;
 use crate::ports::{get_or_allocate_port, save_app};
 use crate::ssh::{run_remote_command, upload_file};
+use chrono::Utc;
+
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
@@ -24,13 +26,21 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("detected app type: {:?}", app_type);
 
+    let timestamp = Utc::now().timestamp();
+    
     let image_tag = match app_type {
-        AppType::Docker => "tsuki-app:latest",
-        AppType::Rust => "tsuki-rust:latest",
-        AppType::Node => "tsuki-node:latest",
+        AppType::Docker => {
+            format!("tsuki-app:{}", timestamp)
+        }
+        AppType::Rust => {
+            format!("tsuki-rust:{}", timestamp)
+        }
+        AppType::Node => {
+            format!("tsuki-node:{}", timestamp)
+        }
     };
 
-    build_image(&path, image_tag).await?;
+    build_image(&path, &image_tag).await?;
 
     info!("image built successfully");
 
@@ -38,7 +48,7 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("exporting deployment artifact");
 
-    export_image(image_tag, artifact_path).await?;
+    export_image(&image_tag, artifact_path).await?;
 
     info!("artifact created at: {}", artifact_path);
 
@@ -66,7 +76,7 @@ pub async fn run(path: String) -> Result<()> {
 
     let container_id = run_container(
         &host,
-        image_tag,
+        &image_tag,
         &app_name,
         port,
         80,
@@ -81,7 +91,7 @@ pub async fn run(path: String) -> Result<()> {
 
     record_deployment(
         &app_name,
-        image_tag,
+        &image_tag,
         port,
         &container_id,
     )?;

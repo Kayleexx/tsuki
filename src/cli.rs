@@ -17,6 +17,10 @@ pub enum Commands {
     Logs {
         app: String,
     },
+    Rollback {
+        app: String,
+    },
 
+    Apps,
     Ps,
 }

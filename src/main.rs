@@ -16,6 +16,9 @@ mod deployments;
 mod models;
 mod ports;
 mod caddy;
+mod rollback;
+mod apps;
+mod state;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -35,6 +38,13 @@ async fn main() -> Result<()> {
         Commands::Ps => {
             ps::run().await?;
         }
+        Commands::Rollback { app } => {
+            rollback::rollback(app).await?;
+        }
+        Commands::Apps => {
+            apps::list_apps()?;
+        }
+        
     }
 
     Ok(())
