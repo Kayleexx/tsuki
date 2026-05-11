@@ -59,3 +59,30 @@ pub async fn upload_file(
 
     Ok(())
 }
+
+pub async fn run_remote_command_output(
+    target: &Host,
+    command: &str,
+) -> Result<String> {
+    let destination = format!(
+        "{}@{}",
+        target.user,
+        target.host
+    );
+
+    let output = Command::new("ssh")
+        .arg(destination)
+        .arg(command)
+        .output()
+        .await?;
+
+    if !output.status.success() {
+        bail!("remote command failed");
+    }
+
+    Ok(
+        String::from_utf8_lossy(&output.stdout)
+            .trim()
+            .to_string()
+    )
+}

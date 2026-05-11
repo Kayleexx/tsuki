@@ -22,5 +22,8 @@ pub enum Commands {
     },
 
     Apps,
+    Status {
+        app: String,
+    },
     Ps,
 }

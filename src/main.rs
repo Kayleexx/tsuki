@@ -19,6 +19,7 @@ mod caddy;
 mod rollback;
 mod apps;
 mod state;
+mod status;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -37,6 +38,9 @@ async fn main() -> Result<()> {
 
         Commands::Ps => {
             ps::run().await?;
+        }
+        Commands::Status { app } => {
+            status::status(app).await?;
         }
         Commands::Rollback { app } => {
             rollback::rollback(app).await?;
