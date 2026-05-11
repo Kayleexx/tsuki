@@ -6,6 +6,7 @@ use crate::docker::build_image;
 use crate::artifact::export_image;
 use crate::ssh::{run_remote_command, upload_file, Host};
 use crate::container::run_container;
+use crate::config::default_host;
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
@@ -32,10 +33,7 @@ pub async fn run(path: String) -> Result<()> {
     
     info!("artifact created at: {}", artifact_path);
 
-    let host = Host {
-        user: "kaylee".into(),
-        host: "192.168.0.47".into(),
-    };
+    let host = default_host();
     
     let remote_artifact_path = "/tmp/tsuki-app.tar.gz";
     

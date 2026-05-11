@@ -7,7 +7,7 @@ mod artifact;
 mod ps;
 mod ssh;
 mod container;
-
+mod config;
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
