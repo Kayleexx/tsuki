@@ -9,12 +9,11 @@ use crate::container::run_container;
 use crate::docker::build_image;
 use crate::deployments::record_deployment;
 use crate::ports::{get_or_allocate_port, save_app};
-use crate::ssh::{run_remote_command, upload_file};
+use crate::ssh::{run_remote_command, Host, upload_file};
 use chrono::Utc;
 
-
 pub async fn run(path: String) -> Result<()> {
-    info!("starting deployment");
+    println!("✓ Starting deployment");
 
     let app_name = std::fs::canonicalize(&path)?
         .file_name()
@@ -85,9 +84,37 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("configuring reverse proxy");
 
-    configure_app(&host, &app_name, port).await?;
-
-    info!("reverse proxy configured");
+    println!("✓ Configuring reverse proxy");
+    
+    configure_app(
+        &host,
+        &app_name,
+        port,
+    )
+    .await?;
+    
+    println!("✓ Reverse proxy configured");
+    
+    println!("✓ Running health checks");
+    
+    run_remote_command(
+        &host,
+        &format!(
+            "curl -f http://localhost:{} >/dev/null",
+            port
+        ),
+    )
+    .await?;
+    
+    println!("✓ Health checks passed");
+    
+    println!();
+    println!(" Application live at:");
+    println!(
+        "https://{}.{}.sslip.io",
+        app_name,
+        host.host
+    );
 
     record_deployment(
         &app_name,
