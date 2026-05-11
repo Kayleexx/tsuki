@@ -1,0 +1,1 @@
+/home/kaylee/miracles/tsuki/target/debug/tsuki: /home/kaylee/miracles/tsuki/src/cli.rs /home/kaylee/miracles/tsuki/src/deploy.rs /home/kaylee/miracles/tsuki/src/logs.rs /home/kaylee/miracles/tsuki/src/main.rs /home/kaylee/miracles/tsuki/src/ps.rs
