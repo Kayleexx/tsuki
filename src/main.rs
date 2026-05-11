@@ -12,6 +12,7 @@ use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
 mod db;
+mod deployments;
 mod models;
 mod ports;
 mod caddy;

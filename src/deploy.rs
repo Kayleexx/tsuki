@@ -7,6 +7,7 @@ use crate::caddy::configure_app;
 use crate::config::default_host;
 use crate::container::run_container;
 use crate::docker::build_image;
+use crate::deployments::record_deployment;
 use crate::ports::{get_or_allocate_port, save_app};
 use crate::ssh::{run_remote_command, upload_file};
 
@@ -63,13 +64,27 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("starting remote container");
 
-    run_container(&host, image_tag, &app_name, port, 80).await?;
+    let container_id = run_container(
+        &host,
+        image_tag,
+        &app_name,
+        port,
+        80,
+    )
+    .await?;
 
     info!("configuring reverse proxy");
 
     configure_app(&host, &app_name, port).await?;
 
     info!("reverse proxy configured");
+
+    record_deployment(
+        &app_name,
+        image_tag,
+        port,
+        &container_id,
+    )?;
 
     info!("container started successfully");
 
