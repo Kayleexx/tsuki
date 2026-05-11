@@ -3,6 +3,7 @@ use tracing::info;
 
 use crate::app::{detect_app, AppType};
 use crate::docker::build_image;
+use crate::artifact::export_image;
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
@@ -20,6 +21,14 @@ pub async fn run(path: String) -> Result<()> {
     build_image(&path, image_tag).await?;
 
     info!("image built successfully");
+
+    let artifact_path = ".tsuki/artifacts/tsuki-app.tar.gz";
+    
+    info!("exporting deployment artifact");
+    
+    export_image(image_tag, artifact_path).await?;
+    
+    info!("artifact created at: {}", artifact_path);
 
     Ok(())
 }

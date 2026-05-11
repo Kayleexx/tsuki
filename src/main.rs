@@ -3,6 +3,7 @@ mod deploy;
 mod logs;
 mod app;
 mod docker;
+mod artifact;
 mod ps;
 
 use anyhow::Result;

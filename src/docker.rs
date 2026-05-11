@@ -14,7 +14,10 @@ pub async fn build_image(path: &str, tag: &str) -> Result<()> {
         .await?;
 
     if !status.success() {
-        bail!("docker build failed");
+        bail!(
+            "docker build failed. ensure a Dockerfile exists in {}",
+            path
+        );
     }
 
     Ok(())
