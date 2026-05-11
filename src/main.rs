@@ -14,6 +14,7 @@ use cli::{Cli, Commands};
 mod db;
 mod models;
 mod ports;
+mod caddy;
 
 #[tokio::main]
 async fn main() -> Result<()> {

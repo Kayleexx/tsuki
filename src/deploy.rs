@@ -1,21 +1,14 @@
 use anyhow::Result;
-use std::path::Path;
 use tracing::info;
 
-use crate::app::{detect_app, AppType};
+use crate::app::{AppType, detect_app};
 use crate::artifact::export_image;
+use crate::caddy::configure_app;
 use crate::config::default_host;
 use crate::container::run_container;
 use crate::docker::build_image;
-use crate::ports::{
-    allocate_port,
-    save_app,
-    get_or_allocate_port,
-};
-use crate::ssh::{
-    run_remote_command,
-    upload_file,
-};
+use crate::ports::{get_or_allocate_port, save_app};
+use crate::ssh::{run_remote_command, upload_file};
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
@@ -54,23 +47,11 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("uploading artifact to remote host");
 
-    upload_file(
-        &host,
-        artifact_path,
-        remote_artifact_path,
-    )
-    .await?;
+    upload_file(&host, artifact_path, remote_artifact_path).await?;
 
     info!("loading docker image remotely");
 
-    run_remote_command(
-        &host,
-        &format!(
-            "docker load < {}",
-            remote_artifact_path
-        ),
-    )
-    .await?;
+    run_remote_command(&host, &format!("docker load < {}", remote_artifact_path)).await?;
 
     info!("remote image loaded successfully");
 
@@ -82,14 +63,13 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("starting remote container");
 
-    run_container(
-        &host,
-        image_tag,
-        &app_name,
-        port,
-        80,
-    )
-    .await?;
+    run_container(&host, image_tag, &app_name, port, 80).await?;
+
+    info!("configuring reverse proxy");
+
+    configure_app(&host, &app_name, port).await?;
+
+    info!("reverse proxy configured");
 
     info!("container started successfully");
 
