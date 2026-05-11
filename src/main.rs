@@ -6,6 +6,7 @@ mod docker;
 mod artifact;
 mod ps;
 mod ssh;
+mod container;
 
 use anyhow::Result;
 use clap::Parser;

@@ -5,6 +5,7 @@ use crate::app::{detect_app, AppType};
 use crate::docker::build_image;
 use crate::artifact::export_image;
 use crate::ssh::{run_remote_command, upload_file, Host};
+use crate::container::run_container;
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
@@ -59,6 +60,19 @@ pub async fn run(path: String) -> Result<()> {
     .await?;
     
     info!("remote image loaded successfully");
+
+    info!("starting remote container");
+    
+    run_container(
+        &host,
+        image_tag,
+        "tsuki-test-app",
+        8080,
+        80,
+    )
+    .await?;
+    
+    info!("container started successfully");
 
     Ok(())
 }
