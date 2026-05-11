@@ -1,15 +1,29 @@
 use anyhow::Result;
+use std::path::Path;
 use tracing::info;
 
 use crate::app::{detect_app, AppType};
-use crate::docker::build_image;
 use crate::artifact::export_image;
-use crate::ssh::{run_remote_command, upload_file, Host};
-use crate::container::run_container;
 use crate::config::default_host;
+use crate::container::run_container;
+use crate::docker::build_image;
+use crate::ports::{
+    allocate_port,
+    save_app,
+};
+use crate::ssh::{
+    run_remote_command,
+    upload_file,
+};
 
 pub async fn run(path: String) -> Result<()> {
     info!("starting deployment");
+
+    let app_name = std::fs::canonicalize(&path)?
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
 
     let app_type = detect_app(&path)?;
 
@@ -26,28 +40,28 @@ pub async fn run(path: String) -> Result<()> {
     info!("image built successfully");
 
     let artifact_path = ".tsuki/artifacts/tsuki-app.tar.gz";
-    
+
     info!("exporting deployment artifact");
-    
+
     export_image(image_tag, artifact_path).await?;
-    
+
     info!("artifact created at: {}", artifact_path);
 
     let host = default_host();
-    
+
     let remote_artifact_path = "/tmp/tsuki-app.tar.gz";
-    
+
     info!("uploading artifact to remote host");
-    
+
     upload_file(
         &host,
         artifact_path,
         remote_artifact_path,
     )
     .await?;
-    
+
     info!("loading docker image remotely");
-    
+
     run_remote_command(
         &host,
         &format!(
@@ -56,20 +70,26 @@ pub async fn run(path: String) -> Result<()> {
         ),
     )
     .await?;
-    
+
     info!("remote image loaded successfully");
 
+    let port = allocate_port()?;
+
+    save_app(&app_name, port)?;
+
+    info!("allocated port: {}", port);
+
     info!("starting remote container");
-    
+
     run_container(
         &host,
         image_tag,
-        "tsuki-test-app",
-        8080,
+        &app_name,
+        port,
         80,
     )
     .await?;
-    
+
     info!("container started successfully");
 
     Ok(())

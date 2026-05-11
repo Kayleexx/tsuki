@@ -11,6 +11,9 @@ mod config;
 use anyhow::Result;
 use clap::Parser;
 use cli::{Cli, Commands};
+mod db;
+mod models;
+mod ports;
 
 #[tokio::main]
 async fn main() -> Result<()> {
