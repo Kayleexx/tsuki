@@ -1,6 +1,8 @@
 mod cli;
 mod deploy;
 mod logs;
+mod app;
+mod docker;
 mod ps;
 
 use anyhow::Result;
