@@ -6,10 +6,10 @@ use crate::artifact::export_image;
 use crate::caddy::configure_app;
 use crate::config::default_host;
 use crate::container::run_container;
-use crate::docker::build_image;
 use crate::deployments::record_deployment;
+use crate::docker::build_image;
 use crate::ports::{get_or_allocate_port, save_app};
-use crate::ssh::{run_remote_command, Host, upload_file};
+use crate::ssh::{run_remote_command, upload_file};
 use chrono::Utc;
 
 pub async fn run(path: String) -> Result<()> {
@@ -26,7 +26,7 @@ pub async fn run(path: String) -> Result<()> {
     info!("detected app type: {:?}", app_type);
 
     let timestamp = Utc::now().timestamp();
-    
+
     let image_tag = match app_type {
         AppType::Docker => {
             format!("tsuki-app:{}", timestamp)
@@ -73,55 +73,29 @@ pub async fn run(path: String) -> Result<()> {
 
     info!("starting remote container");
 
-    let container_id = run_container(
-        &host,
-        &image_tag,
-        &app_name,
-        port,
-        80,
-    )
-    .await?;
+    let container_id = run_container(&host, &image_tag, &app_name, port, 80).await?;
 
     info!("configuring reverse proxy");
 
     println!("✓ Configuring reverse proxy");
-    
-    configure_app(
-        &host,
-        &app_name,
-        port,
-    )
-    .await?;
-    
+
+    configure_app(&host, &app_name, port).await?;
+
     println!("✓ Reverse proxy configured");
-    
+
     println!("✓ Running health checks");
-    
+
     run_remote_command(
         &host,
-        &format!(
-            "curl -f http://localhost:{} >/dev/null",
-            port
-        ),
+        &format!("curl -f http://localhost:{} >/dev/null", port),
     )
     .await?;
-    
-    println!("✓ Health checks passed");
-    
-    println!();
-    println!(" Application live at:");
-    println!(
-        "https://{}.{}.sslip.io",
-        app_name,
-        host.host
-    );
 
-    record_deployment(
-        &app_name,
-        &image_tag,
-        port,
-        &container_id,
-    )?;
+    println!("✓ Health checks passed");
+    println!(" Application live at:");
+    println!("https://{}.{}.sslip.io", app_name, host.host);
+
+    record_deployment(&app_name, &image_tag, port, &container_id)?;
 
     info!("container started successfully");
 
