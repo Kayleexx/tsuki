@@ -37,7 +37,7 @@ pub async fn rollback(
         Err(_) => bail!("no previous deployment found"),
     };
 
-    let host = default_host();
+    let host = default_host()?;
 
     println!(
         "rolling back to image: {}",

@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub async fn run(app: String) -> Result<()> {
-    let host = default_host();
+    let host = default_host()?;
 
     let command = format!(
         "docker logs -f {}",

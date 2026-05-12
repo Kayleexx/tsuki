@@ -45,7 +45,7 @@ pub async fn status(
         Err(_) => bail!("app not found"),
     };
 
-    let host = default_host();
+    let host = default_host()?;
 
     let runtime_status =
         run_remote_command_output(

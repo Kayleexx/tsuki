@@ -1,5 +1,4 @@
 use anyhow::Result;
-use tracing::info;
 
 use crate::app::{AppType, detect_app};
 use crate::artifact::export_image;
@@ -10,10 +9,11 @@ use crate::deployments::record_deployment;
 use crate::docker::build_image;
 use crate::ports::{get_or_allocate_port, save_app};
 use crate::ssh::{run_remote_command, upload_file};
+
 use chrono::Utc;
 
 pub async fn run(path: String) -> Result<()> {
-    println!("✓ Starting deployment");
+    println!("✓ starting deployment");
 
     let app_name = std::fs::canonicalize(&path)?
         .file_name()
@@ -21,9 +21,9 @@ pub async fn run(path: String) -> Result<()> {
         .to_string_lossy()
         .to_string();
 
-    let app_type = detect_app(&path)?;
+    println!("✓ detecting app type");
 
-    info!("detected app type: {:?}", app_type);
+    let app_type = detect_app(&path)?;
 
     let timestamp = Utc::now().timestamp();
 
@@ -39,65 +39,59 @@ pub async fn run(path: String) -> Result<()> {
         }
     };
 
-    build_image(&path, &image_tag).await?;
+    println!("✓ building container");
 
-    info!("image built successfully");
+    build_image(&path, &image_tag).await?;
 
     let artifact_path = ".tsuki/artifacts/tsuki-app.tar.gz";
 
-    info!("exporting deployment artifact");
+    println!("✓ exporting artifact");
 
     export_image(&image_tag, artifact_path).await?;
 
-    info!("artifact created at: {}", artifact_path);
-
-    let host = default_host();
+    let host = default_host()?;
 
     let remote_artifact_path = "/tmp/tsuki-app.tar.gz";
 
-    info!("uploading artifact to remote host");
+    println!("✓ uploading artifact");
 
     upload_file(&host, artifact_path, remote_artifact_path).await?;
 
-    info!("loading docker image remotely");
+    println!("✓ loading remote image");
 
-    run_remote_command(&host, &format!("docker load < {}", remote_artifact_path)).await?;
-
-    info!("remote image loaded successfully");
+    run_remote_command(
+        &host,
+        &format!("docker load < {} >/dev/null 2>&1", remote_artifact_path),
+    )
+    .await?;
 
     let port = get_or_allocate_port(&app_name)?;
 
     save_app(&app_name, port)?;
 
-    info!("allocated port: {}", port);
+    println!("✓ allocating port {}", port);
 
-    info!("starting remote container");
+    println!("✓ starting container");
 
     let container_id = run_container(&host, &image_tag, &app_name, port, 80).await?;
 
-    info!("configuring reverse proxy");
-
-    println!("✓ Configuring reverse proxy");
+    println!("✓ configuring reverse proxy");
 
     configure_app(&host, &app_name, port).await?;
 
-    println!("✓ Reverse proxy configured");
-
-    println!("✓ Running health checks");
+    println!("✓ running health checks");
 
     run_remote_command(
         &host,
-        &format!("curl -f http://localhost:{} >/dev/null", port),
+        &format!("curl -fsS http://localhost:{} >/dev/null", port),
     )
     .await?;
 
-    println!("✓ Health checks passed");
-    println!(" Application live at:");
-    println!("https://{}.{}.sslip.io", app_name, host.host);
+    println!();
+    println!("application live at:");
+    println!("http://{}.{}.sslip.io", app_name, host.host);
 
     record_deployment(&app_name, &image_tag, port, &container_id)?;
-
-    info!("container started successfully");
 
     Ok(())
 }
