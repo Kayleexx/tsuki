@@ -51,7 +51,7 @@ Remote Host
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/tsuki.git
+git clone https://github.com/Kayleexx/tsuki.git
 cd tsuki
 ```
 
