@@ -179,6 +179,9 @@ cargo run -- rollback test-app
 
 ## demo
 
-<img width="953" height="900" alt="image" src="https://github.com/user-attachments/assets/36f5bf24-7354-4872-8717-9ef60b15dafa" /> 
+<img width="958" height="881" alt="image" src="https://github.com/user-attachments/assets/2dcce2ce-ddcd-4887-839b-e43062337797" />
 
-<img width="600" height="172" alt="image" src="https://github.com/user-attachments/assets/e62027e8-0381-4b1f-9b85-079879529aea" />
+
+<img width="407" height="65" alt="image" src="https://github.com/user-attachments/assets/8ee56922-b6d2-4973-b9e2-2f16a44a1b18" />
+
+
